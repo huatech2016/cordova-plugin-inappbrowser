@@ -476,7 +476,24 @@ static CDVUIInAppBrowser* instance = nil;
     )){
         useBeforeLoad = YES;
     }
+	
+    NSString* reqUrl = request.URL.absoluteString;
+    if ([reqUrl hasPrefix:@"alipays://"] || [reqUrl hasPrefix:@"alipay://"]) {
+            // NOTE: 跳转支付宝App
+            BOOL bSucc = [[UIApplication sharedApplication]openURL:request.URL];
 
+            // NOTE: 如果跳转失败，则跳转itune下载支付宝App
+            if (!bSucc) {
+                UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"提示"
+                                                               message:@"未检测到支付宝客户端，请安装后重试。"
+                                                              delegate:self
+                                                     cancelButtonTitle:@"立即安装"
+                                                     otherButtonTitles:nil];
+                [alert show];
+            }
+            return NO;
+    }
+	
     // See if the url uses the 'gap-iab' protocol. If so, the host should be the id of a callback to execute,
     // and the path, if present, should be a JSON-encoded value to pass to the callback.
     if ([[url scheme] isEqualToString:@"gap-iab"]) {
